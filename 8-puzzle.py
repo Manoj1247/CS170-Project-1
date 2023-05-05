@@ -52,6 +52,45 @@ class Puzzle:
         else:
             print("Invalid choice. Please try again.")
             self.get_input()
+    
+    def find_zero(self, board):
+        for row in range(len(board)):
+            for col in range(len(board[row])):
+                if board[row][col] == 0:
+                    return row, col
+        return -1, -1
+
+
+    def uniform_cost_search(self):
+        visited = set()
+        initial_state = [self.initial_state[i * 3:(i + 1) * 3] for i in range(3)]
+        tmp_goal_state = [self.goal_state[i * 3:(i + 1) * 3] for i in range(3)]
+        priority_queue = [(0, initial_state)]
+
+        while priority_queue:
+            moves_so_far, board = heapq.heappop(priority_queue)
+
+            if board == tmp_goal_state:
+                return moves_so_far, board
+
+            if str(board) not in visited:
+                visited.add(str(board))
+
+                i, j = self.find_zero(board)
+                neighbors = [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]
+
+                for neighbor in neighbors:
+                    row, col = neighbor
+                    if row < 0 or row >= len(board) or col < 0 or col >= len(board[row]):
+                        continue
+
+                    new_board = [row[:] for row in board]
+                    new_board[row][col], new_board[i][j] = new_board[i][j], new_board[row][col]
+
+                    if str(new_board) not in visited:
+                        heapq.heappush(priority_queue, (moves_so_far + 1, new_board))
+
+        return -1, board
  
     #function to calculate h value for A* with the misplaced tile heuristic 
     def h_misplaced(self, state):
@@ -123,10 +162,14 @@ class Puzzle:
 
     def run(self):
         algo = self.get_input()
+        if algo == 1:
+            moves, goal_state = self.uniform_cost_search() 
+            # print("Solution found in {} moves.".format(self.uniform_cost_search()))
         if(algo==2):
           print (self.a_star_misplaced())
         print("Initial state:")
         self.print_puzzle(self.initial_state)
+        print("Steps to reach Goal state: {}".format(moves))
         print("Goal state:")
         self.print_puzzle(self.goal_state)
 

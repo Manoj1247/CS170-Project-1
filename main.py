@@ -1,4 +1,5 @@
 import random
+from queue import PriorityQueue
 
 
 def get_custom_puzzle(puzzle_arr):
@@ -43,13 +44,16 @@ def create_random_puzzle(puzzle_arr):
 
 
 def print_puzzle(puzzle_arr):
-    for row in puzzle_arr:
-        print(*row)
-    print("")
-    
+    puzzle_str = ""
+    for i in range(len(puzzle_arr)):
+        puzzle_str += str(puzzle_arr[i]) + " "
+        if (i + 1) % 3 == 0:
+            puzzle_str += "\n"
+    return puzzle_str
+
 
 def io_info(puzzle_arr):
-    student_id = "862078302"
+    student_id = "XXXXXXXXX"
     print("Welcome to " + student_id + "'s 8 puzzle solver.")
 
     while True:
@@ -89,19 +93,122 @@ def io_info(puzzle_arr):
     return algo_choice
 
 
-def uniform_cost_search(puzzle_arr):
-    print("uniform cost search algo")
-    print_puzzle(puzzle_arr)
+def convert_to_single_array(puzzle_arr):
+    temp_arr = []
+    for row in puzzle_arr:
+        for value in row:
+            temp_arr.append(value)
+
+    puzzle_arr.clear()
+    for value in temp_arr:
+        puzzle_arr.append(value)
+
+# THE ALGORITHMS FOR SEARCH BELOW
+
+
+class Node:
+    def __init__(self, state, parent=None, depth=0, heuristic=0):
+        self.state = state
+        self.parent = parent
+        self.heuristic = self.calculate_heuristic_value()
+        if parent:
+            self.depth = parent.depth + 1
+        else:
+            self.depth = 0
+
+    def __lt__(self, other):
+        return self.heuristic < other.heuristic
+
+    def calculate_heuristic_value(self):
+        total_distance = 0
+        for i in range(len(self.state)):
+            if self.state[i] == 0:
+                continue
+            if self.state[i] != i + 1:
+                total_distance += 1
+        return total_distance
 
 
 def a_misplaced_tile(puzzle_arr):
-    print("A* with the misplaced tile heuristic")
-    print_puzzle(puzzle_arr)
+    queue = PriorityQueue()
+    visited = []
+    nodes_expanded = 0
+    initial_node = Node(puzzle_arr)
+    queue.put((initial_node.heuristic, initial_node))
+
+    while not queue.empty():
+        curr_node = queue.get()[1]
+        if is_solution(curr_node):
+            print("-----SOLUTION FOUND-----")
+            print(print_puzzle(curr_node.state))
+            return curr_node, nodes_expanded, queue.qsize()
+        else:
+            print("Expanding State")
+            print(print_puzzle(curr_node.state))
+            expand(curr_node, queue, visited)
+            nodes_expanded += 1
+
+    print("SOLUTION NOT POSSIBLE")
+    failure_node = Node([])
+    return failure_node, nodes_expanded, queue.qsize()
 
 
-def a_euclidean_distance(puzzle_arr):
-    print("A* with the Euclidean distance heuristic")
-    print_puzzle(puzzle_arr)
+def calculate_heuristic_value(node):
+    total_distance = 0
+    for i in range(len(node.state)):
+        if node.state[i] == 0:
+            continue
+        if node.state[i] != i + 1:
+            total_distance += 1
+    return total_distance
+
+
+def is_solution(node):
+    solution = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+    return solution == node.state
+
+
+def expand(node, q, visited):
+
+    zero_idx = node.state.index(0)
+    n = len(node.state)
+    dim = int(n ** 0.5)
+
+# BLANK UP
+    if zero_idx - dim >= 0:
+        new_node_state = node.state.copy()
+        new_node_state[zero_idx], new_node_state[zero_idx-3] = new_node_state[zero_idx-3], new_node_state[zero_idx]
+        new_node = Node(new_node_state, parent=node)
+        if new_node_state not in visited:
+            visited.append(new_node_state)
+            q.put((calculate_heuristic_value(new_node), new_node))
+
+# BLANK DOWN
+    if zero_idx + dim < n:
+        new_node_state = node.state.copy()
+        new_node_state[zero_idx], new_node_state[zero_idx+3] = new_node_state[zero_idx+3], new_node_state[zero_idx]
+        new_node = Node(new_node_state, parent=node)
+        if new_node_state not in visited:
+            visited.append(new_node_state)
+            q.put((calculate_heuristic_value(new_node), new_node))
+
+# BLANK LEFT
+    if zero_idx % dim != 0:
+        new_node_state = node.state.copy()
+        new_node_state[zero_idx], new_node_state[zero_idx-1] = new_node_state[zero_idx-1], new_node_state[zero_idx]
+        new_node = Node(new_node_state, parent=node)
+        if new_node_state not in visited:
+            visited.append(new_node_state)
+            q.put((calculate_heuristic_value(new_node), new_node))
+
+# BLANK RIGHT
+    if (zero_idx + 1) % dim != 0:
+        new_node_state = node.state.copy()
+        new_node_state[zero_idx], new_node_state[zero_idx + 1] = new_node_state[zero_idx + 1], new_node_state[zero_idx]
+        new_node = Node(new_node_state, parent=node)
+        if new_node_state not in visited:
+            visited.append(new_node_state)
+            q.put((calculate_heuristic_value(new_node), new_node))
 
 
 def main():
@@ -111,14 +218,16 @@ def main():
     num_expanded = None
 
     algo_choice = io_info(puzzle_arr)
-    print_puzzle(puzzle_arr)
+    convert_to_single_array(puzzle_arr)
 
     if algo_choice == 1:
-        uniform_cost_search(puzzle_arr)
+        print("UNIFORM COST")
     elif algo_choice == 2:
-        a_misplaced_tile(puzzle_arr)
+        finished_node, num_expanded, max_in_queue = a_misplaced_tile(puzzle_arr)
+        if len(finished_node.state) > 0:
+            depth = finished_node.depth
     else:
-        a_euclidean_distance(puzzle_arr)
+        print("EUCLIDEAN DISTANCE")
 
     print("\n\nGoal!!!")
     print(f"\nTo solve this problem the search algorithm expanded a total of {num_expanded} nodes.")

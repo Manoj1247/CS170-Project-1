@@ -1,5 +1,6 @@
 import random
 from queue import PriorityQueue
+import math
 
 
 def get_custom_puzzle(puzzle_arr):
@@ -8,10 +9,12 @@ def get_custom_puzzle(puzzle_arr):
 
     for i in range(3):
         while True:
-            row_input = input(f"Enter the {row_name[i]} row, use space or tabs between numbers: ")
+            row_input = input(
+                f"Enter the {row_name[i]} row, use space or tabs between numbers: ")
             row_str_list = row_input.split()
             if len(row_str_list) != 3:
-                print("Invalid input! Please enter exactly 3 integers separated by space or tab.")
+                print(
+                    "Invalid input! Please enter exactly 3 integers separated by space or tab.")
             else:
                 try:
                     row_int_list = [int(x) for x in row_str_list]
@@ -58,7 +61,8 @@ def io_info(puzzle_arr):
 
     while True:
         try:
-            user_option = int(input("Type \"1\" to use a default puzzle, or \"2\" to enter your own puzzle."))
+            user_option = int(
+                input("Type \"1\" to use a default puzzle, or \"2\" to enter your own puzzle."))
             if user_option == 1 or user_option == 2:
                 break
             else:
@@ -153,6 +157,30 @@ def a_misplaced_tile(puzzle_arr):
     return failure_node, nodes_expanded, queue.qsize()
 
 
+def a_euclidean_distance(puzzle_arr):
+    queue = PriorityQueue()
+    visited = []
+    nodes_expanded = 0
+    initial_node = Node(puzzle_arr)
+    queue.put((initial_node.heuristic, initial_node))
+
+    while not queue.empty():
+        curr_node = queue.get()[1]
+        if is_solution(curr_node):
+            print("-----SOLUTION FOUND-----")
+            print(print_puzzle(curr_node.state))
+            return curr_node, nodes_expanded, queue.qsize()
+        else:
+            print("Expanding State")
+            print(print_puzzle(curr_node.state))
+            expand(curr_node, queue, visited)
+            nodes_expanded += 1
+
+    print("SOLUTION NOT POSSIBLE")
+    failure_node = Node([])
+    return failure_node, nodes_expanded, queue.qsize()
+
+
 def calculate_heuristic_value(node):
     total_distance = 0
     for i in range(len(node.state)):
@@ -177,7 +205,8 @@ def expand(node, q, visited):
 # BLANK UP
     if zero_idx - dim >= 0:
         new_node_state = node.state.copy()
-        new_node_state[zero_idx], new_node_state[zero_idx-3] = new_node_state[zero_idx-3], new_node_state[zero_idx]
+        new_node_state[zero_idx], new_node_state[zero_idx -
+                                                 3] = new_node_state[zero_idx-3], new_node_state[zero_idx]
         new_node = Node(new_node_state, parent=node)
         if new_node_state not in visited:
             visited.append(new_node_state)
@@ -186,7 +215,8 @@ def expand(node, q, visited):
 # BLANK DOWN
     if zero_idx + dim < n:
         new_node_state = node.state.copy()
-        new_node_state[zero_idx], new_node_state[zero_idx+3] = new_node_state[zero_idx+3], new_node_state[zero_idx]
+        new_node_state[zero_idx], new_node_state[zero_idx +
+                                                 3] = new_node_state[zero_idx+3], new_node_state[zero_idx]
         new_node = Node(new_node_state, parent=node)
         if new_node_state not in visited:
             visited.append(new_node_state)
@@ -195,7 +225,8 @@ def expand(node, q, visited):
 # BLANK LEFT
     if zero_idx % dim != 0:
         new_node_state = node.state.copy()
-        new_node_state[zero_idx], new_node_state[zero_idx-1] = new_node_state[zero_idx-1], new_node_state[zero_idx]
+        new_node_state[zero_idx], new_node_state[zero_idx -
+                                                 1] = new_node_state[zero_idx-1], new_node_state[zero_idx]
         new_node = Node(new_node_state, parent=node)
         if new_node_state not in visited:
             visited.append(new_node_state)
@@ -204,7 +235,8 @@ def expand(node, q, visited):
 # BLANK RIGHT
     if (zero_idx + 1) % dim != 0:
         new_node_state = node.state.copy()
-        new_node_state[zero_idx], new_node_state[zero_idx + 1] = new_node_state[zero_idx + 1], new_node_state[zero_idx]
+        new_node_state[zero_idx], new_node_state[zero_idx +
+                                                 1] = new_node_state[zero_idx + 1], new_node_state[zero_idx]
         new_node = Node(new_node_state, parent=node)
         if new_node_state not in visited:
             visited.append(new_node_state)
@@ -223,15 +255,21 @@ def main():
     if algo_choice == 1:
         print("UNIFORM COST")
     elif algo_choice == 2:
-        finished_node, num_expanded, max_in_queue = a_misplaced_tile(puzzle_arr)
+        finished_node, num_expanded, max_in_queue = a_misplaced_tile(
+            puzzle_arr)
         if len(finished_node.state) > 0:
             depth = finished_node.depth
     else:
-        print("EUCLIDEAN DISTANCE")
+        finished_node, num_expanded, max_in_queue = a_euclidean_distance(
+            puzzle_arr)
+        if len(finished_node.state) > 0:
+            depth = finished_node.depth
 
     print("\n\nGoal!!!")
-    print(f"\nTo solve this problem the search algorithm expanded a total of {num_expanded} nodes.")
-    print(f"The maximum number of nodes in the queue at any one time: {max_in_queue}.")
+    print(
+        f"\nTo solve this problem the search algorithm expanded a total of {num_expanded} nodes.")
+    print(
+        f"The maximum number of nodes in the queue at any one time: {max_in_queue}.")
     print(f"The depth of the goal node was {depth}.")
 
 

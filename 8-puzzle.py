@@ -1,4 +1,5 @@
 import heapq
+import numpy as np
 class Node:
     def __init__(self, state, parent=None, action=None, g=0, h=0):
         self.state = state
@@ -16,10 +17,12 @@ class Puzzle:
         self.operators = ["UP", "DOWN", "LEFT", "RIGHT"]
 
     def print_puzzle(self, state):
+        puzzle_str = ''
         for i in range(3):
             for j in range(3):
-                print(state[3*i + j], end=" ")
-            print()
+                puzzle_str += str(state[3*i + j]) + ' '
+            puzzle_str += '\n'
+        return puzzle_str
 
     def get_input(self):
         print("Welcome to XXX 8 puzzle solver.")
@@ -52,6 +55,8 @@ class Puzzle:
         else:
             print("Invalid choice. Please try again.")
             self.get_input()
+ 
+    #function to calculate h value for A* with the
     
     def find_zero(self, board):
         for row in range(len(board)):
@@ -138,14 +143,16 @@ class Puzzle:
         while open_list:
             
             current_node = heapq.heappop(open_list)
-            print(current_node.state, 'current') 
+            print(f'The best state to explore with g={current_node.g} and f={current_node.h} is:\n' f'{self.print_puzzle(current_node.state)}') 
             if current_node.state == self.goal_state:
                 path = []
                 while current_node.parent is not None:
                     path.append(current_node.action)
                     current_node = current_node.parent
                 path.reverse()
-                return path
+                print(f'Total number of moves for A* with misplaced : {len(path)}\n')
+                print(f'Trace of the path(operators): {path}')
+                return
 
             closed_list.add(tuple(current_node.state))
 
@@ -164,14 +171,13 @@ class Puzzle:
         algo = self.get_input()
         if algo == 1:
             moves, goal_state = self.uniform_cost_search() 
-            # print("Solution found in {} moves.".format(self.uniform_cost_search()))
+            print("Solution found in {} moves.".format(self.uniform_cost_search()))
         if(algo==2):
-          print (self.a_star_misplaced())
+           self.a_star_misplaced()
         print("Initial state:")
-        self.print_puzzle(self.initial_state)
-        print("Steps to reach Goal state: {}".format(moves))
+        print(self.print_puzzle(self.initial_state))
         print("Goal state:")
-        self.print_puzzle(self.goal_state)
+        print(self.print_puzzle(self.goal_state))
 
 puzzle = Puzzle([], [])
 puzzle.run()

@@ -1,6 +1,7 @@
 import heapq
 import numpy as np
 import math
+import random
 
 
 class Node:
@@ -10,6 +11,7 @@ class Node:
         self.action = action
         self.g = g
         self.h = h
+        self.max_queue_size = 0  # Max queue size
 
     def __lt__(self, other):
         return (self.g + self.h) < (other.g + other.h)
@@ -28,13 +30,22 @@ class Puzzle:
                 puzzle_str += str(state[3*i + j]) + ' '
             puzzle_str += '\n'
         return puzzle_str
+    
+    def random_puzzle(self):
+        random_arr = random.sample(range(0, 9), 9)
+        arr = []
+
+        for i in range(9):
+            arr.append(random_arr.pop(0))
+
+        return arr
 
     def get_input(self):
         print("Welcome to XXX 8 puzzle solver.")
         print("Type '1' to use a default puzzle, or '2' to enter your own puzzle.")
         choice = input()
         if choice == '1':
-            self.initial_state = [1, 2, 3, 4, 5, 0, 6, 7, 8]
+            self.initial_state = self.random_puzzle()
             self.goal_state = [1, 2, 3, 4, 5, 6, 7, 8, 0]
         elif choice == '2':
             print("Enter your puzzle, use a zero to represent the blank")
@@ -77,6 +88,8 @@ class Puzzle:
             self.initial_state[i * 3:(i + 1) * 3] for i in range(3)]
         tmp_goal_state = [self.goal_state[i * 3:(i + 1) * 3] for i in range(3)]
         priority_queue = [(0, initial_state, [])]
+        self.max_queue_size = 1
+        nodes_expanded = 0
 
         while priority_queue:
             numberofmoves, board, path = heapq.heappop(priority_queue)
@@ -86,10 +99,13 @@ class Puzzle:
                 for move, state in path:
                     print("Move:", move)
                     print(self.print_puzzle([item for sublist in state for item in sublist]))
+                print(f"NODES EXPANDED: {nodes_expanded}")
+                print(f"MAXIMUM QUEUE SIZE: {self.max_queue_size}")
                 return numberofmoves, board
 
             if str(board) not in visited:
                 visited.add(str(board))
+                nodes_expanded += 1
 
                 i, j = self.find_zero(board)
                 neighbors = [(i-1, j, "UP"), (i+1, j, "DOWN"), (i, j-1, "LEFT"), (i, j+1, "RIGHT")]
@@ -105,6 +121,9 @@ class Puzzle:
                     if str(new_board) not in visited:
                         heapq.heappush(
                             priority_queue, (numberofmoves + 1, new_board, path + [(direction, new_board)]))
+            
+            if len(priority_queue) > self.max_queue_size:
+                self.max_queue_size = len(priority_queue)
 
         return -1, board
 
@@ -172,6 +191,7 @@ class Puzzle:
 
     def a_star_misplaced(self):
         open_list = []
+        self.max_queue_size = 1
         closed_list = set()
         print(open_list)
         start_node = Node(self.initial_state, None, None, 0,
@@ -191,6 +211,7 @@ class Puzzle:
                 print(
                     f'Total number of moves for A* with misplaced : {len(path)}\n')
                 print(f'Trace of the path(operators): {path}')
+                print(f"NODES EXPANDED = {len(closed_list)}")
                 return
 
             closed_list.add(tuple(current_node.state))
@@ -204,11 +225,15 @@ class Puzzle:
                 successor_node = Node(
                     successor_state, current_node, action, g, h)
                 heapq.heappush(open_list, successor_node)
+            
+            if len(open_list) > self.max_queue_size:
+                self.max_queue_size = len(open_list)
 
         return None
 
     def a_star_euclidean(self):
         open_list = []
+        self.max_queue_size = 1
         closed_list = set()
         start_node = Node(self.initial_state, None, None, 0, 0)
         start_node.h = self.calculate_h_euclidean(self.initial_state)
@@ -230,6 +255,7 @@ class Puzzle:
                 print(
                     f'Total number of moves for A* with Euclidean distance: {len(path)}\n')
                 print(f'Trace of the path (operators): {path}')
+                print(f"NODES EXPANDED = {len(closed_list)}")
                 return
 
             closed_list.add(tuple(current_node.state))
@@ -242,6 +268,10 @@ class Puzzle:
                 successor_node = Node(successor_state, current_node, action, g)
                 successor_node.h = self.calculate_h_euclidean(successor_state)
                 heapq.heappush(open_list, successor_node)
+            
+            if len(open_list) > self.max_queue_size:
+                self.max_queue_size = len(open_list)
+            
         return None
 
     def run(self):
@@ -258,7 +288,11 @@ class Puzzle:
         print(self.print_puzzle(self.initial_state))
         print("Goal state:")
         print(self.print_puzzle(self.goal_state))
+        print("Maximum queue size: {}".format(self.max_queue_size))  # Print maximum queue size
 
 
 puzzle = Puzzle([], [])
 puzzle.run()
+
+
+

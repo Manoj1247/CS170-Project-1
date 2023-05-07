@@ -1,6 +1,7 @@
 import heapq
 import numpy as np
 import math
+import random
 
 
 class Node:
@@ -10,6 +11,7 @@ class Node:
         self.action = action
         self.g = g
         self.h = h
+        self.max_queue_size = 0  # Max queue size
 
     def __lt__(self, other):
         return (self.g + self.h) < (other.g + other.h)
@@ -86,6 +88,7 @@ class Puzzle:
             self.initial_state[i * 3:(i + 1) * 3] for i in range(3)]
         tmp_goal_state = [self.goal_state[i * 3:(i + 1) * 3] for i in range(3)]
         priority_queue = [(0, initial_state, [])]
+        self.max_queue_size = 1
 
         while priority_queue:
             numberofmoves, board, path = heapq.heappop(priority_queue)
@@ -115,6 +118,9 @@ class Puzzle:
                     if str(new_board) not in visited:
                         heapq.heappush(
                             priority_queue, (numberofmoves + 1, new_board, path + [(direction, new_board)]))
+            
+            if len(priority_queue) > self.max_queue_size:
+                self.max_queue_size = len(priority_queue)
 
         return -1, board
 
@@ -182,6 +188,7 @@ class Puzzle:
 
     def a_star_misplaced(self):
         open_list = []
+        self.max_queue_size = 1
         closed_list = set()
         print(open_list)
         start_node = Node(self.initial_state, None, None, 0,
@@ -215,11 +222,15 @@ class Puzzle:
                 successor_node = Node(
                     successor_state, current_node, action, g, h)
                 heapq.heappush(open_list, successor_node)
+            
+            if len(open_list) > self.max_queue_size:
+                self.max_queue_size = len(open_list)
 
         return None
 
     def a_star_euclidean(self):
         open_list = []
+        self.max_queue_size = 1
         closed_list = set()
         start_node = Node(self.initial_state, None, None, 0, 0)
         start_node.h = self.calculate_h_euclidean(self.initial_state)
@@ -254,6 +265,10 @@ class Puzzle:
                 successor_node = Node(successor_state, current_node, action, g)
                 successor_node.h = self.calculate_h_euclidean(successor_state)
                 heapq.heappush(open_list, successor_node)
+            
+            if len(open_list) > self.max_queue_size:
+                self.max_queue_size = len(open_list)
+            
         return None
 
     def run(self):
@@ -270,6 +285,7 @@ class Puzzle:
         print(self.print_puzzle(self.initial_state))
         print("Goal state:")
         print(self.print_puzzle(self.goal_state))
+        print("Maximum queue size: {}".format(self.max_queue_size))  # Print maximum queue size
 
 
 puzzle = Puzzle([], [])

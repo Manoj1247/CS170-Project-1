@@ -95,6 +95,7 @@ class Puzzle:
                 for move, state in path:
                     print("Move:", move)
                     print(self.print_puzzle([item for sublist in state for item in sublist]))
+                print(f"VISITED NOTES: {len(visited)}")
                 return numberofmoves, board
 
             if str(board) not in visited:
@@ -200,6 +201,7 @@ class Puzzle:
                 print(
                     f'Total number of moves for A* with misplaced : {len(path)}\n')
                 print(f'Trace of the path(operators): {path}')
+                print(f"NODES EXPANDED = {len(closed_list)}")
                 return
 
             closed_list.add(tuple(current_node.state))
@@ -239,6 +241,7 @@ class Puzzle:
                 print(
                     f'Total number of moves for A* with Euclidean distance: {len(path)}\n')
                 print(f'Trace of the path (operators): {path}')
+                print(f"NODES EXPANDED = {len(closed_list)}")
                 return
 
             closed_list.add(tuple(current_node.state))

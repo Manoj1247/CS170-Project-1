@@ -28,13 +28,22 @@ class Puzzle:
                 puzzle_str += str(state[3*i + j]) + ' '
             puzzle_str += '\n'
         return puzzle_str
+    
+    def random_puzzle(self):
+        random_arr = random.sample(range(0, 9), 9)
+        arr = []
+
+        for i in range(9):
+            arr.append(random_arr.pop(0))
+
+        return arr
 
     def get_input(self):
         print("Welcome to XXX 8 puzzle solver.")
         print("Type '1' to use a default puzzle, or '2' to enter your own puzzle.")
         choice = input()
         if choice == '1':
-            self.initial_state = [1, 2, 3, 4, 5, 0, 6, 7, 8]
+            self.initial_state = self.random_puzzle()
             self.goal_state = [1, 2, 3, 4, 5, 6, 7, 8, 0]
         elif choice == '2':
             print("Enter your puzzle, use a zero to represent the blank")

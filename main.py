@@ -129,7 +129,10 @@ class Node:
             if self.state[i] == 0:
                 continue
             if self.state[i] != i + 1:
-                total_distance += 1
+                row_diff = abs(i // 3 - (self.state[i] - 1) // 3)
+                col_diff = abs(i % 3 - (self.state[i] - 1) % 3)
+                distance = math.sqrt(row_diff**2 + col_diff**2)
+                total_distance += distance
         return total_distance
 
 
@@ -157,7 +160,7 @@ def a_misplaced_tile(puzzle_arr):
     return failure_node, nodes_expanded, queue.qsize()
 
 
-def a_euclidean_distance(puzzle_arr):
+def a_euclidean(puzzle_arr):
     queue = PriorityQueue()
     visited = []
     nodes_expanded = 0
@@ -259,11 +262,12 @@ def main():
             puzzle_arr)
         if len(finished_node.state) > 0:
             depth = finished_node.depth
-    else:
-        finished_node, num_expanded, max_in_queue = a_euclidean_distance(
-            puzzle_arr)
+    elif algo_choice == 3:
+        finished_node, num_expanded, max_in_queue = a_euclidean(puzzle_arr)
         if len(finished_node.state) > 0:
             depth = finished_node.depth
+    else:
+        print("Invalid choice. Please select 1, 2, or 3 for the algorithm.")
 
     print("\n\nGoal!!!")
     print(

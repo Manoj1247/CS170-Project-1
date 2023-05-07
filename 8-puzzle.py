@@ -89,7 +89,10 @@ class Puzzle:
         tmp_goal_state = [self.goal_state[i * 3:(i + 1) * 3] for i in range(3)]
         priority_queue = [(0, initial_state, [])]
         self.max_queue_size = 1
+<<<<<<< HEAD
         nodes_expanded = 0
+=======
+>>>>>>> 037ea46f7f71a8d7c7c9584b55bca789a137c65a
 
         while priority_queue:
             numberofmoves, board, path = heapq.heappop(priority_queue)
@@ -99,8 +102,12 @@ class Puzzle:
                 for move, state in path:
                     print("Move:", move)
                     print(self.print_puzzle([item for sublist in state for item in sublist]))
+<<<<<<< HEAD
                 print(f"NODES EXPANDED: {nodes_expanded}")
                 print(f"MAXIMUM QUEUE SIZE: {self.max_queue_size}")
+=======
+                print(f"VISITED NOTES: {len(visited)}")
+>>>>>>> 037ea46f7f71a8d7c7c9584b55bca789a137c65a
                 return numberofmoves, board
 
             if str(board) not in visited:

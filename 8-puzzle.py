@@ -76,22 +76,26 @@ class Puzzle:
         initial_state = [
             self.initial_state[i * 3:(i + 1) * 3] for i in range(3)]
         tmp_goal_state = [self.goal_state[i * 3:(i + 1) * 3] for i in range(3)]
-        priority_queue = [(0, initial_state)]
+        priority_queue = [(0, initial_state, [])]
 
         while priority_queue:
-            moves_so_far, board = heapq.heappop(priority_queue)
+            numberofmoves, board, path = heapq.heappop(priority_queue)
 
             if board == tmp_goal_state:
-                return moves_so_far, board
+                print("Solution found in {} moves:".format(numberofmoves))
+                for move, state in path:
+                    print("Move:", move)
+                    print(self.print_puzzle([item for sublist in state for item in sublist]))
+                return numberofmoves, board
 
             if str(board) not in visited:
                 visited.add(str(board))
 
                 i, j = self.find_zero(board)
-                neighbors = [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]
+                neighbors = [(i-1, j, "UP"), (i+1, j, "DOWN"), (i, j-1, "LEFT"), (i, j+1, "RIGHT")]
 
                 for neighbor in neighbors:
-                    row, col = neighbor
+                    row, col, direction = neighbor
                     if row < 0 or row >= len(board) or col < 0 or col >= len(board[row]):
                         continue
 
@@ -100,9 +104,10 @@ class Puzzle:
 
                     if str(new_board) not in visited:
                         heapq.heappush(
-                            priority_queue, (moves_so_far + 1, new_board))
+                            priority_queue, (numberofmoves + 1, new_board, path + [(direction, new_board)]))
 
         return -1, board
+
 
     # function to calculate h value for A* with the misplaced tile heuristic
     def h_misplaced(self, state):
@@ -243,8 +248,7 @@ class Puzzle:
         algo = self.get_input()
         if algo == 1:
             moves, goal_state = self.uniform_cost_search()
-            print("Solution found in {} moves.".format(
-                self.uniform_cost_search()))
+            print("Solution found in {} moves.".format(moves))
         if (algo == 2):
             self.a_star_misplaced()
         if algo == 3:

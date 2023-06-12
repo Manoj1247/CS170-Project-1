@@ -2,8 +2,23 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 
-small_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Small_data__9.txt"
-large_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Large_data__9.txt"
+small_dataset_path = "/Users/Vishal/cs170/CS170-Project-1/small-test-dataset.txt"
+large_dataset_path = "/Users/Vishal/cs170/CS170-Project-1/large-test-dataset.txt"
+
+def calculate_accuracy(classifier, data):
+    num_correct = 0
+    num_total = len(data)
+
+    for i in range(num_total):
+        instance = data[i, 1:] 
+        true_label = data[i, 0]
+        predicted_label = classifier.test(instance)
+
+        if predicted_label == true_label:
+            num_correct += 1
+
+    accuracy = (num_correct / num_total) * 100
+    return accuracy
 
 class Classifier:
     def __init__(self):
@@ -13,6 +28,10 @@ class Classifier:
     def train(self, instances, labels):
         self.training_data = instances
         self.labels = labels
+
+    def train_all_features(self, data):
+        self.training_data = data[:, 1:]
+        self.labels = data[:, 0] 
 
     def test(self, instance):
         nearest_neighbor_distance = float('inf')
@@ -81,6 +100,11 @@ class GreedySearch:
         k_values = []
         k = 0
 
+        classifier_all_features = Classifier()
+        classifier_all_features.train_all_features(self.data)
+        accuracy_all_features = calculate_accuracy(classifier_all_features, self.data)
+        print(f'Accuracy using all features: {accuracy_all_features}%')
+
         for i in range(self.num_feats):
             best_performance = -1
             best_feature_choice = None
@@ -95,7 +119,7 @@ class GreedySearch:
                     if temp_performance > best_performance:
                         best_performance = temp_performance
                         best_feature_choice = feature
-
+        
                     print(f"\tUsing feature(s): {temp_set} accuracy is: {temp_performance}%")
             else:
                 curr_subset = current_best.copy()
@@ -122,6 +146,12 @@ class GreedySearch:
             k_values.append(k)
             
         print(f'The best feature subset is: {current_best} with accuracy of: {current_best_performance}%')
+
+         # Compare accuracies
+        print(f'Accuracy with feature selection: {current_best_performance}%')
+
+        improvement = current_best_performance - accuracy_all_features
+        print(f'Accuracy improvement with feature selection: {improvement}%')
 
         # Accuracy vs increasing values of k
         plt.plot(k_values, accuracies)
@@ -175,8 +205,8 @@ def normalize_data(data):
 
 def main():
     print("Welcome to Eddie's Feature Selection Algorithm")
-    small_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Small_data__9.txt"
-    large_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Large_data__9.txt"
+    small_dataset_path = "/Users/Vishal/cs170/CS170-Project-1/small-test-dataset.txt"
+    large_dataset_path = "/Users/Vishal/cs170/CS170-Project-1/large-test-dataset.txt"
 
     # read small dataset
     with open(small_dataset_path, 'r') as file:
@@ -221,6 +251,8 @@ def main():
         GreedySearch(num_feats_large, False, large_data).search()
     else:
         HillClimbing(num_feats_small, small_data).search()
+
+
 
 if __name__ == '__main__':
     main()

@@ -1,6 +1,7 @@
 import numpy as np
-small_dataset_path = "/kaggle/input/part-3dataset/CS170_Spring_2023_Small_data__9.txt"
-large_dataset_path = "/kaggle/input/part-3dataset/CS170_Spring_2023_Large_data__9.txt"
+import random
+small_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Small_data__9.txt"
+large_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Large_data__9.txt"
 
 class Classifier:
     def __init__(self):
@@ -106,6 +107,38 @@ class GreedySearch:
         print(f'The best feature subset is: {current_best} with accuracy of: {current_best_performance}%')
         return current_best, current_best_performance
 
+class HillClimbing:
+    def __init__(self, num_feats, data, max_attempts=10):
+        self.num_feats = num_feats
+        self.data = data
+        self.max_attempts = max_attempts
+
+    def search(self):
+        current_best = set()
+        current_best_performance = -1
+        print("\n\nBeginning Search\n")
+
+        attempts = 0
+        while attempts < self.max_attempts:
+            new_feature = random.randint(1, self.num_feats)
+
+            if new_feature in current_best:
+                current_best.remove(new_feature)
+            else:
+                current_best.add(new_feature)
+
+            temp_performance = LeaveOneOutCrossValidator(self.data, current_best, new_feature).validate()
+            print(f"\tUsing feature(s): {current_best} accuracy is: {temp_performance}%")
+
+            if temp_performance > current_best_performance:
+                current_best_performance = temp_performance
+                attempts = 0
+            else:
+                print("\n(Warning! Accuracy has decreased!)")
+                attempts += 1
+
+        print(f'The best feature subset is: {current_best} with accuracy of: {current_best_performance}%')
+        return current_best, current_best_performance
 
 def normalize_data(data):
     for i in range(1, data.shape[1]):
@@ -117,8 +150,8 @@ def normalize_data(data):
 
 def main():
     print("Welcome to Eddie's Feature Selection Algorithm")
-    small_dataset_path = "/kaggle/input/part-3dataset/CS170_Spring_2023_Small_data__9.txt"
-    large_dataset_path = "/kaggle/input/part-3dataset/CS170_Spring_2023_Large_data__9.txt"
+    small_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Small_data__9.txt"
+    large_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Large_data__9.txt"
 
     # read small dataset
     with open(small_dataset_path, 'r') as file:
@@ -144,22 +177,25 @@ def main():
 
     # run greedy search on small dataset
     print("Running on small dataset...")
-    print("Type the number of the algorithm you want to run.\n1. Forward Selection\n2. Back Elimination")
+    print("Type the number of the algorithm you want to run.\n1. Forward Selection\n2. Back Elimination\n3. Hill Climbing")
     type_of_search = int(input(f"Choice:"))
     if type_of_search == 1:
         GreedySearch(num_feats_small, True, small_data).search()
-    else:
+    elif type_of_search == 2:
         GreedySearch(num_feats_small, False, small_data).search()
+    else:
+        HillClimbing(num_feats_small, small_data).search()
 
     # run greedy search on large dataset
     print("\nRunning on large dataset...")
-    print("Type the number of the algorithm you want to run.\n1. Forward Selection\n2. Back Elimination")
+    print("Type the number of the algorithm you want to run.\n1. Forward Selection\n2. Back Elimination\n3. Hill Climbing")
     type_of_search = int(input(f"Choice:"))
     if type_of_search == 1:
         GreedySearch(num_feats_large, True, large_data).search()
-    else:
+    elif type_of_search == 2:
         GreedySearch(num_feats_large, False, large_data).search()
-
+    else:
+        HillClimbing(num_feats_small, small_data).search()
 
 if __name__ == '__main__':
     main()

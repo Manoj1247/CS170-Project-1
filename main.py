@@ -1,5 +1,7 @@
 import numpy as np
 import random
+import matplotlib.pyplot as plt
+
 small_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Small_data__9.txt"
 large_dataset_path = "/Users/Vishal/cs170/CS170_Spring_2023_Large_data__9.txt"
 
@@ -70,21 +72,30 @@ class GreedySearch:
         current_best = set()
         current_best_performance = -1
         print("\n\nBeginning Search\n")
+        
         if not self.forwards:
             all_features = set(range(1, self.num_feats + 1))
             current_best = all_features.copy()
+
+        accuracies = []
+        k_values = []
+        k = 0
+
         for i in range(self.num_feats):
             best_performance = -1
             best_feature_choice = None
+            
             if self.forwards:
                 remaining_features = set(range(1, self.num_feats + 1)) - current_best
                 for feature in remaining_features:
                     temp_set = current_best.copy()
                     temp_set.add(feature)
                     temp_performance = LeaveOneOutCrossValidator(self.data, temp_set, feature).validate()
+                    
                     if temp_performance > best_performance:
                         best_performance = temp_performance
                         best_feature_choice = feature
+
                     print(f"\tUsing feature(s): {temp_set} accuracy is: {temp_performance}%")
             else:
                 curr_subset = current_best.copy()
@@ -103,8 +114,22 @@ class GreedySearch:
             else:
                 print("\n(Warning! Accuracy has decreased!)")
                 break
+            
             print(f"\nFeature set {current_best} was best, accuracy is: {current_best_performance}%\n")
+
+            k += 1
+            accuracies.append(current_best_performance)
+            k_values.append(k)
+            
         print(f'The best feature subset is: {current_best} with accuracy of: {current_best_performance}%')
+
+        # Accuracy vs increasing values of k
+        plt.plot(k_values, accuracies)
+        plt.xlabel('k')
+        plt.ylabel('Accuracy')
+        plt.title('Accuracy vs k')
+        plt.show()
+
         return current_best, current_best_performance
 
 class HillClimbing:
